@@ -1,0 +1,53 @@
+{
+  "name": "electron-liquid-glass",
+  "version": "0.1.0",
+  "description": "macOS glass / vibrancy wrapper for Electron BrowserWindow",
+  "main": "js/index.cjs",
+  "types": "index.d.ts",
+  "files": [
+    "js",
+    "src",
+    "build/Release/*.node",
+    "prebuilds/**/*",
+    "index.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "clean": "rimraf build prebuilds",
+    "build:native": "prebuildify --napi --strip",
+    "prepack": "npm run build:native",
+    "dev": "npm run build:native && npm start",
+    "start": "npx -y electron examples/electron.cjs"
+  },
+  "keywords": [
+    "electron",
+    "macos",
+    "vibrancy",
+    "glass",
+    "nsvisualeffectview"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "gypfile": true,
+  "os": [
+    "darwin"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "bindings": "^1.5.0",
+    "node-addon-api": "^8.4.0"
+  },
+  "optionalDependencies": {
+    "node-gyp-build": "^4"
+  },
+  "devDependencies": {
+    "prebuildify": "^5",
+    "electron": "^36",
+    "rimraf": "^5",
+    "@types/node": "^20",
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,150 @@
+#include "../include/Common.h"
+#include <napi.h>
+#import <objc/runtime.h>
+
+#ifdef PLATFORM_OSX
+#import <AppKit/AppKit.h>
+
+// Simple registry so JS can still address a view by numeric id.
+static std::map<int, NSView *> g_glassViews;
+static int g_nextViewId = 0;
+
+// Key for objc-associated glass view on a container
+static const void *kGlassEffectKey = &kGlassEffectKey;
+
+// Utility: convert #RRGGBB or #RRGGBBAA to NSColor* (sRGB)
+static NSColor* ColorFromHexNSString(NSString* hex)
+{
+  NSString* cleaned = [[hex stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
+  if ([cleaned hasPrefix:@"#"]) cleaned = [cleaned substringFromIndex:1];
+  if (cleaned.length != 6 && cleaned.length != 8) return nil;
+
+  unsigned int rgba = 0;
+  NSScanner* scanner = [NSScanner scannerWithString:cleaned];
+  if (![scanner scanHexInt:&rgba]) return nil;
+
+  CGFloat r,g,b,a;
+  if (cleaned.length == 6) {
+    r = ((rgba & 0xFF0000) >> 16) / 255.0;
+    g = ((rgba & 0x00FF00) >> 8)  / 255.0;
+    b =  (rgba & 0x0000FF)        / 255.0;
+    a = 1.0;
+  } else {
+    r = ((rgba & 0xFF000000) >> 24) / 255.0;
+    g = ((rgba & 0x00FF0000) >> 16) / 255.0;
+    b = ((rgba & 0x0000FF00) >> 8)  / 255.0;
+    a =  (rgba & 0x000000FF)        / 255.0;
+  }
+  return [NSColor colorWithRed:r green:g blue:b alpha:a];
+}
+
+#define RUN_ON_MAIN(block)                                  \
+  if ([NSThread isMainThread]) {                            \
+    block();                                                \
+  } else {                                                  \
+    dispatch_sync(dispatch_get_main_queue(), block);        \
+  }
+
+/*!
+ * AddGlassEffectView
+ * -----------------
+ * Creates an `NSGlassEffectView` (private) and inserts it behind the contentView
+ * of the supplied Electron window. The handle received from JavaScript is the
+ * pointer to the Cocoa `NSView` that backs the BrowserWindow. The view is
+ * retained in a small registry so that we can manipulate or remove it later if
+ * required. The function returns an integer identifier that can be used from
+ * JavaScript.
+ *
+ * Returns –1 on error.
+ */
+extern "C" int AddGlassEffectView(unsigned char *buffer) {
+  if (!buffer) {
+    return -1;
+  }
+
+  __block int resultId = -1;
+
+  RUN_ON_MAIN(^{
+    NSView *rootView = *reinterpret_cast<NSView **>(buffer);
+    if (!rootView) return;
+
+    // Insert under the *container* view (superview) so web contents stays on top.
+    NSView *container = rootView.superview ?: rootView;
+
+    // Remove previous glass (if any)
+    NSView *old = objc_getAssociatedObject(container, kGlassEffectKey);
+    if (old) [old removeFromSuperview];
+
+    NSRect bounds = container.bounds;
+
+    NSView *glass = nil;
+    Class glassCls = NSClassFromString(@"NSGlassEffectView");
+    if (glassCls) {
+      /**
+      * GLASS VIEW
+      */
+      glass = [[glassCls alloc] initWithFrame:bounds];
+    } else {
+      /**
+      * FALLBACK VISUAL EFFECT VIEW
+      */
+      NSVisualEffectView *visual = [[NSVisualEffectView alloc] initWithFrame:bounds];
+      visual.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+      visual.blendingMode = NSVisualEffectBlendingModeBehindWindow;
+      visual.material = NSVisualEffectMaterialUnderWindowBackground;
+      visual.state = NSVisualEffectStateActive;
+      glass = visual;
+    }
+
+    // Ensure autoresize if we created a private glass view too
+    glass.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+
+    [container addSubview:glass positioned:NSWindowBelow relativeTo:nil];
+    objc_setAssociatedObject(container, kGlassEffectKey, glass, OBJC_ASSOCIATION_RETAIN);
+
+    // Listen for appearance changes once per container
+    static const SEL sel = @selector(appearanceChanged:);
+    if (![container respondsToSelector:sel]) {
+      [[NSNotificationCenter defaultCenter] addObserverForName:NSViewFrameDidChangeNotification
+                                                        object:container.window
+                                                         queue:nil
+                                                    usingBlock:^(__unused NSNotification * _Nonnull note) {
+        NSVisualEffectView *v = objc_getAssociatedObject(container, kGlassEffectKey);
+        if (v) {
+          v.state = NSVisualEffectStateActive; // refresh rendering
+        }
+      }];
+    }
+
+    int id = g_nextViewId++;
+    g_glassViews[id] = glass;
+    resultId = id;
+  });
+
+  return resultId;
+}
+
+// Configure glass view by id
+extern "C" void ConfigureGlassView(int viewId, double cornerRadius, const char* tintHex) {
+  RUN_ON_MAIN(^{
+    auto it = g_glassViews.find(viewId);
+    if (it == g_glassViews.end()) return;
+    NSView* glass = it->second;
+
+    // Corner radius via CALayer
+    glass.wantsLayer = YES;
+    glass.layer.cornerRadius = cornerRadius;
+    glass.layer.masksToBounds = YES;
+
+    if (tintHex && strlen(tintHex) > 0) {
+      NSString* hex = [NSString stringWithUTF8String:tintHex];
+      NSColor* c = ColorFromHexNSString(hex);
+      if (c && [glass respondsToSelector:@selector(setTintColor:)]) {
+        [(id)glass setTintColor:c];
+      } else if (c) {
+        glass.layer.backgroundColor = c.CGColor;
+      }
+    }
+  });
+}
+#endif // PLATFORM_OSX 

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      html,
+      body {
+        background-color: transparent !important;
+      }
+      /* Anything with `drag` lets the user move the window */
+      .drag-region {
+        -webkit-app-region: drag;
+        /* optional visual cue */
+        height: 28px; /* same as regular title-bar */
+
+        position: absolute;
+        inset: 0;
+        z-index: 1000;
+      }
+
+      /* Interactive items sitting on that region must be exempt */
+      .no-drag,
+      button,
+      a,
+      input {
+        -webkit-app-region: no-drag;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="drag-region"></div>
+
+    <script src="./index.js"></script>
+  </body>
+</html>
