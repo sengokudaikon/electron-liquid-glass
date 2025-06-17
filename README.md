@@ -198,7 +198,7 @@ electron-liquid-glass/
 
 ### Technical Details
 
-- **Primary**: Uses private `NSGlassEffectView` API when available
+- **Primary**: Uses `NSGlassEffectView` API when available
 - **Fallback**: Falls back to public `NSVisualEffectView` on older systems
 - **Performance**: Minimal overhead, native rendering performance
 - **Compatibility**: Works with all Electron window configurations
