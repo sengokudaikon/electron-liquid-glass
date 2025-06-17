@@ -99,7 +99,7 @@ import liquidGlass, { GlassOptions } from "electron-liquid-glass";
 
 const options: GlassOptions = {
   cornerRadius: 16, // (optional)
-  tintColor: "#44000000", // 25% black tint (optional)
+  tintColor: "#44000010", // black tint (optional)
 };
 
 liquidGlass.addView(window.getNativeWindowHandle(), options);
