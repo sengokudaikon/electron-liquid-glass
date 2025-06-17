@@ -59,8 +59,6 @@
     "glass",
     "nsvisualeffectview"
   ],
-  "author": "Your Name",
-  "license": "MIT",
   "gypfile": true,
   "os": [
     "darwin"
@@ -78,6 +76,7 @@
   "devDependencies": {
     "@types/node": "^20",
     "electron": "^36",
+    "node-gyp": "^11.2.0",
     "prebuildify": "^5",
     "rimraf": "^5",
     "tsdown": "^0.12.8",

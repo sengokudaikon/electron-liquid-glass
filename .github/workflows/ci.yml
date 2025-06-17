@@ -90,8 +90,16 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Install Python (for node-gyp)
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
       - name: Install dependencies
         run: bun install --frozen-lockfile
+
+      - name: Install node-gyp globally
+        run: npm install -g node-gyp
 
       - name: Build native module
         run: bun run build:native
