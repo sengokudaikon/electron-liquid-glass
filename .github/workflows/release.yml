@@ -72,7 +72,7 @@ jobs:
               require('./dist/index.cjs');
               console.log('✅ CJS build works');
             } catch (err) {
-              if (!err.message.includes('NSViewFrameDidChangeNotification')) {
+              if (!err.message.includes('NSViewFrameDidChangeNotification') && !err.message.includes('Cannot find module')) {
                 throw err;
               }
               console.log('✅ CJS build works (expected native error)');

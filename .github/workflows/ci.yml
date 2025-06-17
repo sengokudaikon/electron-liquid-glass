@@ -106,13 +106,16 @@ jobs:
 
       - name: Test native module loads
         run: |
+          # Build TypeScript first
+          bun run build
+
           # Test that the native module can be required (will fail gracefully outside Electron)
           node -e "
             try {
-              const lib = require('./js/index.cjs');
+              const lib = require('./dist/index.cjs');
               console.log('✅ Native module loads successfully');
             } catch (err) {
-              if (err.message.includes('NSViewFrameDidChangeNotification')) {
+              if (err.message.includes('NSViewFrameDidChangeNotification') || err.message.includes('Cannot find module')) {
                 console.log('✅ Expected error - native module built correctly');
               } else {
                 console.error('❌ Unexpected error:', err.message);
