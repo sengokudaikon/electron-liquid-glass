@@ -2,23 +2,55 @@
   "name": "electron-liquid-glass",
   "version": "0.1.0",
   "description": "macOS glass / vibrancy wrapper for Electron BrowserWindow",
-  "main": "js/index.cjs",
-  "types": "index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/meridius-labs/electron-liquid-glass.git"
+  },
+  "bugs": {
+    "url": "https://github.com/meridius-labs/electron-liquid-glass/issues"
+  },
+  "homepage": "https://github.com/meridius-labs/electron-liquid-glass#readme",
+  "author": "Meridius Labs",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
   "files": [
+    "dist",
     "js",
     "src",
     "build/Release/*.node",
     "prebuilds/**/*",
-    "index.d.ts",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
-    "clean": "rimraf build prebuilds",
+    "build": "tsdown",
     "build:native": "prebuildify --napi --strip",
-    "prepack": "npm run build:native",
-    "dev": "npm run build:native && npm start",
-    "start": "npx -y electron examples/electron.cjs"
+    "build:all": "bun run build:native && bun run build",
+    "clean": "rimraf build prebuilds dist",
+    "prepack": "bun run build:all",
+    "dev": "bun run build:native && bun start",
+    "start": "bunx -y electron examples/electron.cjs",
+    "version:patch": "npm version patch",
+    "version:minor": "npm version minor",
+    "version:major": "npm version major",
+    "version:prerelease": "npm version prerelease",
+    "release": "bun run build:all && npm publish",
+    "release:dry": "bun run build:all && npm publish --dry-run"
   },
   "keywords": [
     "electron",
@@ -44,10 +76,11 @@
     "node-gyp-build": "^4"
   },
   "devDependencies": {
-    "prebuildify": "^5",
-    "electron": "^36",
-    "rimraf": "^5",
     "@types/node": "^20",
+    "electron": "^36",
+    "prebuildify": "^5",
+    "rimraf": "^5",
+    "tsdown": "^0.12.8",
     "typescript": "^5"
   }
 }

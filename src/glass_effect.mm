@@ -1,6 +1,9 @@
 #include "../include/Common.h"
 #include <napi.h>
 #import <objc/runtime.h>
+#import <objc/message.h>
+#include <string>
+#include <cctype>
 
 #ifdef PLATFORM_OSX
 #import <AppKit/AppKit.h>
@@ -146,5 +149,78 @@ extern "C" void ConfigureGlassView(int viewId, double cornerRadius, const char* 
       }
     }
   });
+}
+
+// -----------------------------------------------------------------------------
+// Dynamically set private properties on a previously created glass view
+// -----------------------------------------------------------------------------
+
+// Helper that converts a C-string key (e.g. "variant") into the Objective-C
+// selector for its private setter (e.g. set_variant:). It automatically adds
+// the leading underscore when missing.
+static SEL SetterFromKey(const std::string &key, bool privateVariant) {
+  std::string name;
+  if (privateVariant) {
+    // ensure leading underscore
+    if (!key.empty() && key.front() != '_')
+      name = "_" + key;
+    else
+      name = key;
+    name = "set" + name;
+  } else {
+    // camel-case public variant: set + CapitalizedFirst + rest
+    if (key.empty()) return nil;
+    name = "set";
+    name += toupper(key[0]);
+    name += key.substr(1);
+  }
+  name += ":";
+  return sel_registerName(name.c_str());
+}
+
+static SEL ResolveSetter(id obj, const char* cKey) {
+  if (!cKey) return nil;
+  std::string key(cKey);
+  if (key.empty()) return nil;
+  // Try private style first (set_<key>:)
+  SEL sel = SetterFromKey(key, true);
+  if ([obj respondsToSelector:sel]) return sel;
+  // Then try public style (setKey:)
+  sel = SetterFromKey(key, false);
+  if ([obj respondsToSelector:sel]) return sel;
+  return nil;
+}
+
+extern "C" void SetGlassViewIntProperty(int viewId, const char* key, long long value) {
+#ifdef PLATFORM_OSX
+  RUN_ON_MAIN(^{
+    auto it = g_glassViews.find(viewId);
+    if (it == g_glassViews.end()) return;
+    NSView* glass = it->second;
+
+    SEL sel = ResolveSetter(glass, key);
+    if (!sel) return;
+    if ([glass respondsToSelector:sel]) {
+      ((void (*)(id, SEL, long long))objc_msgSend)(glass, sel, value);
+    }
+  });
+#endif
+}
+
+extern "C" void SetGlassViewStringProperty(int viewId, const char* key, const char* value) {
+#ifdef PLATFORM_OSX
+  RUN_ON_MAIN(^{
+    auto it = g_glassViews.find(viewId);
+    if (it == g_glassViews.end()) return;
+    NSView* glass = it->second;
+
+    SEL sel = ResolveSetter(glass, key);
+    if (!sel) return;
+    if ([glass respondsToSelector:sel]) {
+      NSString* val = value ? [NSString stringWithUTF8String:value] : @"";
+      ((void (*)(id, SEL, id))objc_msgSend)(glass, sel, val);
+    }
+  });
+#endif
 }
 #endif // PLATFORM_OSX 
