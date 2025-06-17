@@ -224,10 +224,6 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 ## 📋 Roadmap
 
 - [ ] **View Management** - Remove and update existing glass views
-- [ ] **Material Variants** - Support for more `NSVisualEffectMaterial` types
-- [ ] **Dynamic Colors** - Runtime color adaptation based on content
-- [ ] **Performance Optimization** - Reduce memory footprint for multiple views
-- [ ] **Linux Support** - Investigate compositor-based effects for Linux
 
 ## 🙏 Acknowledgments
 
