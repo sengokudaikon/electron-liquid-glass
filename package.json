@@ -1,6 +1,6 @@
 {
   "name": "electron-liquid-glass",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "macOS glass / vibrancy wrapper for Electron BrowserWindow",
   "repository": {
     "type": "git",
