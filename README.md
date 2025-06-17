@@ -2,6 +2,9 @@
 
 <div align="center">
 
+<img width="387" alt="image" src="https://github.com/user-attachments/assets/3c3c9ea6-2663-4292-b812-a630c2c3f65b" />
+
+
 ![npm](https://img.shields.io/npm/v/electron-liquid-glass)
 ![npm downloads](https://img.shields.io/npm/dm/electron-liquid-glass)
 ![GitHub](https://img.shields.io/github/license/meridius-labs/electron-liquid-glass)
@@ -10,7 +13,7 @@
 
 **Modern macOS glass effects for Electron applications**
 
-_Native `NSGlassEffectView` integration with zero CSS hacks_
+_🪄 NATIVE `NSGlassEffectView` integration with ZERO CSS hacks_
 
 [Installation](#installation) • [Quick Start](#quick-start) • [API](#api) • [Examples](#examples) • [Contributing](#contributing)
 
