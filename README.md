@@ -56,20 +56,20 @@ bun add electron-liquid-glass
 ### Basic Usage
 
 ```javascript
-const { app, BrowserWindow } = require("electron");
-const liquidGlass = require("electron-liquid-glass");
+import { app, BrowserWindow } from "electron";
+import liquidGlass from "electron-liquid-glass";
 
 app.whenReady().then(() => {
   const win = new BrowserWindow({
     width: 800,
     height: 600,
 
-    vibrancy: undefined, // <-- ❌❌❌ do NOT set vibrancy alongside with liquid glass, it will override and look blurry
+    vibrancy: false, // <-- ❌❌❌ do NOT set vibrancy alongside with liquid glass, it will override and look blurry
 
-    titleBarStyle: "hiddenInset", // Recommended for best glass effect
     transparent: true, // <-- This MUST be true
-    frame: false, // <-- Recommended
   });
+
+  win.setWindowButtonVisibility(true); // <-- ✅ This is required to show the window buttons
 
   win.loadFile("index.html");
 
@@ -77,9 +77,13 @@ app.whenReady().then(() => {
    * 🪄 Apply glass effect after content loads 🪄
    */
   win.webContents.once("did-finish-load", () => {
+    // 🪄 Apply effect, get handle
     const glassId = liquidGlass.addView(win.getNativeWindowHandle(), {
       /* options */
     });
+
+    // Experimental, undocumented private APIs
+    liquidGlass.unstable_setVariant(glassId, 2);
   });
 });
 ```
