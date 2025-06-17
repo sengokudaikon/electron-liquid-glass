@@ -1,7 +1,7 @@
 // import { app, BrowserWindow } from "electron";
 // import myAddon from "../js";
 const { app, BrowserWindow, screen, ipcMain } = require("electron");
-const myAddon = require("../js/index.cjs");
+const myAddon = require("../dist/index.cjs");
 const path = require("path");
 
 let mainWindow;
