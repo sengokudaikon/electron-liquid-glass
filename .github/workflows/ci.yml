@@ -179,7 +179,7 @@ jobs:
         run: bunx publint
 
       - name: Check with are-the-types-wrong
-        run: bunx @arethetypeswrong/cli --pack .
+        run: bunx @arethetypeswrong/cli --pack --profile esm-only .
 
   security-audit:
     name: Security Audit

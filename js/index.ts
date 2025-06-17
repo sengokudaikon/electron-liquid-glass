@@ -117,4 +117,12 @@ if (process.platform === "darwin") {
   } as any;
 }
 
+// Export the default as a singleton instance
 export default liquidGlass;
+
+// For CommonJS compatibility, also assign to module.exports
+// This helps avoid the "Incorrect default export" TypeScript error
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = liquidGlass;
+  module.exports.default = liquidGlass;
+}
