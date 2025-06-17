@@ -45,7 +45,7 @@ bun add electron-liquid-glass
 
 ### Requirements
 
-- **macOS 26+** (Big Sur or later)
+- **macOS 26+** (Tahoe or later)
 - **Electron 30+**
 - **Node.js 22+**
 
