@@ -144,26 +144,6 @@ liquidGlass.unstable_setScrim(glassId, 1);
 liquidGlass.unstable_setSubdued(glassId, 1);
 ```
 
-## 🎨 Examples
-
-### Transparent Window with Glass
-
-```javascript
-const win = new BrowserWindow({
-  width: 600,
-  height: 400,
-  transparent: true,
-  frame: false,
-  titleBarStyle: "customButtonsOnHover",
-});
-
-// Apply glass to the entire window
-liquidGlass.addView(win.getNativeWindowHandle(), {
-  cornerRadius: 16,
-  tintColor: "#33FFFFFF",
-});
-```
-
 ## 🔧 Development
 
 ### Building from Source
