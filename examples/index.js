@@ -1,6 +1,6 @@
 // Renderer side for examples – tweak liquid glass
 const { ipcRenderer } = require("electron");
-const { GlassMaterialVariant } = require("../dist/index");
+const liquidGlass = require("../dist/index").default;
 
 let viewId = null;
 
@@ -27,12 +27,13 @@ function buildButtons(containerId, type, values) {
     container.appendChild(btn);
   });
 }
+console.log(liquidGlass);
 
 // Only expose production-safe settings
 buildButtons(
   "variant-buttons",
   "variant",
-  Object.entries(GlassMaterialVariant).map(([name, value]) => {
+  Object.entries(liquidGlass.GlassMaterialVariant).map(([name, value]) => {
     return { name, value };
   })
 );

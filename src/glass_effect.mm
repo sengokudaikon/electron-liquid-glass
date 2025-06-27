@@ -85,19 +85,7 @@ extern "C" int AddGlassEffectView(unsigned char *buffer, bool opaque) {
     NSRect bounds = container.bounds;
 
     NSBox *backgroundView = nil;
-    if (opaque) {
-      // Create a background view behind the glass view using NSBox for proper background color
-      backgroundView = [[NSBox alloc] initWithFrame:bounds];
-      backgroundView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
-      backgroundView.boxType = NSBoxCustom;
-      backgroundView.borderType = NSNoBorder;
-      backgroundView.fillColor = [NSColor windowBackgroundColor];
-      backgroundView.wantsLayer = YES;
-      
-      
-      // Add the background view first (bottom layer)
-      [container addSubview:backgroundView positioned:NSWindowBelow relativeTo:nil];
-    }
+    
 
     NSView *glass = nil;
     Class glassCls = NSClassFromString(@"NSGlassEffectView");
@@ -106,6 +94,20 @@ extern "C" int AddGlassEffectView(unsigned char *buffer, bool opaque) {
       * GLASS VIEW
       */
       glass = [[glassCls alloc] initWithFrame:bounds];
+
+      if (opaque) {
+        // Create a background view behind the glass view using NSBox for proper background color
+        backgroundView = [[NSBox alloc] initWithFrame:bounds];
+        backgroundView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+        backgroundView.boxType = NSBoxCustom;
+        backgroundView.borderType = NSNoBorder;
+        backgroundView.fillColor = [NSColor windowBackgroundColor];
+        backgroundView.wantsLayer = YES;
+        
+        
+        // Add the background view first (bottom layer)
+        [container addSubview:backgroundView positioned:NSWindowBelow relativeTo:nil];
+      }
     } else {
       /**
       * FALLBACK VISUAL EFFECT VIEW
