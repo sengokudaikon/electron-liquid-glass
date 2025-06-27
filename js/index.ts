@@ -23,6 +23,10 @@ export interface LiquidGlassNative {
 class LiquidGlass extends EventEmitter {
   private _addon?: LiquidGlassNative;
 
+  // Instance property for easy access to variants
+  readonly GlassMaterialVariant: typeof GlassMaterialVariant =
+    GlassMaterialVariant;
+
   constructor() {
     super();
     if (process.platform !== "darwin") {
@@ -99,28 +103,8 @@ class LiquidGlass extends EventEmitter {
   }
 }
 
-// Export a singleton instance
-let liquidGlass: LiquidGlass;
+// Create and export the singleton instance
+// The class constructor handles platform checks internally
+const liquidGlass: LiquidGlass = new LiquidGlass();
 
-if (process.platform === "darwin") {
-  liquidGlass = new LiquidGlass();
-} else {
-  // Provide a fallback for unsupported platforms
-  console.warn("Native addon not supported on this platform");
-
-  liquidGlass = {
-    addView: (buffer: Buffer, options: GlassOptions = {}): number => {
-      throw new Error("Native addon not supported on this platform");
-    },
-    setVariant: (): void => {},
-    unstable_setVariant: (): void => {},
-    unstable_setScrim: (): void => {},
-    unstable_setSubdued: (): void => {},
-  } as any;
-}
-
-// Export the default as a singleton instance
 export default liquidGlass;
-
-// Export the GlassMaterialVariant so consumers can access it
-export { GlassMaterialVariant };
