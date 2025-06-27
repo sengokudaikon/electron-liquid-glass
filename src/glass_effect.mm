@@ -92,6 +92,8 @@ extern "C" int AddGlassEffectView(unsigned char *buffer, bool opaque) {
       backgroundView.boxType = NSBoxCustom;
       backgroundView.borderType = NSNoBorder;
       backgroundView.fillColor = [NSColor windowBackgroundColor];
+      backgroundView.wantsLayer = YES;
+      
       
       // Add the background view first (bottom layer)
       [container addSubview:backgroundView positioned:NSWindowBelow relativeTo:nil];
@@ -155,6 +157,15 @@ extern "C" void ConfigureGlassView(int viewId, double cornerRadius, const char* 
     glass.wantsLayer = YES;
     glass.layer.cornerRadius = cornerRadius;
     glass.layer.masksToBounds = YES;
+
+    // corner radius for the background view
+    NSView* container = glass.superview;
+    NSView* backgroundView = objc_getAssociatedObject(container, kBackgroundViewKey);
+    if (backgroundView) {
+      backgroundView.wantsLayer = YES;
+      backgroundView.layer.cornerRadius = cornerRadius;
+      backgroundView.layer.masksToBounds = YES;
+    }
 
     if (tintHex && strlen(tintHex) > 0) {
       NSString* hex = [NSString stringWithUTF8String:tintHex];

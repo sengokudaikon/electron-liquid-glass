@@ -37,7 +37,8 @@ app.whenReady().then(() => {
       }
 
       viewId = myAddon.addView(mainWindow.getNativeWindowHandle(), {
-        opaque: true, // Add opaque background behind glass effect
+        // opaque: true, // Add opaque background behind glass effect
+        // cornerRadius: 24,
       });
       mainWindow.setWindowButtonVisibility(true); // restore traffic lights
 
