@@ -2,7 +2,7 @@
 #include <string>
 
 #ifdef __APPLE__
-extern "C" int AddGlassEffectView(unsigned char *buffer);
+extern "C" int AddGlassEffectView(unsigned char *buffer, bool opaque);
 extern "C" void ConfigureGlassView(int viewId, double cornerRadius, const char *tintHex);
 extern "C" void SetGlassViewIntProperty(int viewId, const char *key, long long value);
 extern "C" void SetGlassViewStringProperty(int viewId, const char *key, const char *value);
@@ -46,6 +46,7 @@ private:
 
     double radius = 0.0;
     std::string tint;
+    bool opaque = false;
     if (info.Length() >= 2 && info[1].IsObject())
     {
       auto obj = info[1].As<Napi::Object>();
@@ -57,12 +58,16 @@ private:
       {
         tint = obj.Get("tintColor").As<Napi::String>().Utf8Value();
       }
+      if (obj.Has("opaque") && obj.Get("opaque").IsBoolean())
+      {
+        opaque = obj.Get("opaque").As<Napi::Boolean>().Value();
+      }
     }
 
     auto buffer = info[0].As<Napi::Buffer<unsigned char>>();
 
 #ifdef __APPLE__
-    int viewId = AddGlassEffectView(buffer.Data());
+    int viewId = AddGlassEffectView(buffer.Data(), opaque);
     if (viewId >= 0)
     {
       ConfigureGlassView(viewId, radius, tint.c_str());

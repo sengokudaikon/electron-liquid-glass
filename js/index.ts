@@ -1,5 +1,6 @@
 import { EventEmitter } from "events";
 import { execSync } from "child_process";
+import { GlassMaterialVariant } from "./variants.js";
 
 // Load the native addon using the 'bindings' module
 // This will look for the compiled .node file in various places
@@ -8,11 +9,12 @@ import native from "./native-loader.js";
 export interface GlassOptions {
   cornerRadius?: number;
   tintColor?: string;
+  opaque?: boolean;
 }
 
 export interface LiquidGlassNative {
   addView(handle: Buffer, options: GlassOptions): number;
-  setVariant(id: number, variant: number): void;
+  setVariant(id: number, variant: GlassMaterialVariant): void;
   setScrimState(id: number, scrim: number): void;
   setSubduedState(id: number, subdued: number): void;
 }
@@ -74,14 +76,14 @@ class LiquidGlass extends EventEmitter {
     return this._addon.addView(handle, options);
   }
 
-  private setVariant(id: number, variant: number): void {
+  private setVariant(id: number, variant: GlassMaterialVariant): void {
     // internal use
     if (!this._addon || typeof this._addon.setVariant !== "function") return;
     this._addon.setVariant(id, variant);
   }
 
   // public
-  unstable_setVariant(id: number, variant: number): void {
+  unstable_setVariant(id: number, variant: GlassMaterialVariant): void {
     this.setVariant(id, variant);
   }
 
@@ -120,9 +122,5 @@ if (process.platform === "darwin") {
 // Export the default as a singleton instance
 export default liquidGlass;
 
-// For CommonJS compatibility, also assign to module.exports
-// This helps avoid the "Incorrect default export" TypeScript error
-if (typeof module !== "undefined" && module.exports) {
-  module.exports = liquidGlass;
-  module.exports.default = liquidGlass;
-}
+// Export the GlassMaterialVariant so consumers can access it
+export { GlassMaterialVariant };

@@ -4,7 +4,6 @@
 
 <img width="387" alt="image" src="https://github.com/user-attachments/assets/3c3c9ea6-2663-4292-b812-a630c2c3f65b" />
 
-
 ![npm](https://img.shields.io/npm/v/electron-liquid-glass)
 ![npm downloads](https://img.shields.io/npm/dm/electron-liquid-glass)
 ![GitHub](https://img.shields.io/github/license/meridius-labs/electron-liquid-glass)
@@ -100,6 +99,7 @@ import liquidGlass, { GlassOptions } from "electron-liquid-glass";
 const options: GlassOptions = {
   cornerRadius: 16, // (optional)
   tintColor: "#44000010", // black tint (optional)
+  opaque: true, // add opaque background behind glass (optional)
 };
 
 liquidGlass.addView(window.getNativeWindowHandle(), options);
@@ -124,6 +124,7 @@ Applies a glass effect to an Electron window.
 interface GlassOptions {
   cornerRadius?: number; // Corner radius in pixels (default: 0)
   tintColor?: string; // Hex color with optional alpha (#RRGGBB or #RRGGBBAA)
+  opaque?: boolean; // Add opaque background behind glass (default: false)
 }
 ```
 

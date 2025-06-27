@@ -12,8 +12,9 @@
 static std::map<int, NSView *> g_glassViews;
 static int g_nextViewId = 0;
 
-// Key for objc-associated glass view on a container
+// Keys for objc-associated views on a container
 static const void *kGlassEffectKey = &kGlassEffectKey;
+static const void *kBackgroundViewKey = &kBackgroundViewKey;
 
 // Utility: convert #RRGGBB or #RRGGBBAA to NSColor* (sRGB)
 static NSColor* ColorFromHexNSString(NSString* hex)
@@ -60,7 +61,7 @@ static NSColor* ColorFromHexNSString(NSString* hex)
  *
  * Returns –1 on error.
  */
-extern "C" int AddGlassEffectView(unsigned char *buffer) {
+extern "C" int AddGlassEffectView(unsigned char *buffer, bool opaque) {
   if (!buffer) {
     return -1;
   }
@@ -74,11 +75,27 @@ extern "C" int AddGlassEffectView(unsigned char *buffer) {
     // Insert under the *container* view (superview) so web contents stays on top.
     NSView *container = rootView.superview ?: rootView;
 
-    // Remove previous glass (if any)
-    NSView *old = objc_getAssociatedObject(container, kGlassEffectKey);
-    if (old) [old removeFromSuperview];
+    // Remove previous glass and background views (if any)
+    NSView *oldGlass = objc_getAssociatedObject(container, kGlassEffectKey);
+    if (oldGlass) [oldGlass removeFromSuperview];
+    
+    NSView *oldBackground = objc_getAssociatedObject(container, kBackgroundViewKey);
+    if (oldBackground) [oldBackground removeFromSuperview];
 
     NSRect bounds = container.bounds;
+
+    NSBox *backgroundView = nil;
+    if (opaque) {
+      // Create a background view behind the glass view using NSBox for proper background color
+      backgroundView = [[NSBox alloc] initWithFrame:bounds];
+      backgroundView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+      backgroundView.boxType = NSBoxCustom;
+      backgroundView.borderType = NSNoBorder;
+      backgroundView.fillColor = [NSColor windowBackgroundColor];
+      
+      // Add the background view first (bottom layer)
+      [container addSubview:backgroundView positioned:NSWindowBelow relativeTo:nil];
+    }
 
     NSView *glass = nil;
     Class glassCls = NSClassFromString(@"NSGlassEffectView");
@@ -102,22 +119,22 @@ extern "C" int AddGlassEffectView(unsigned char *buffer) {
     // Ensure autoresize if we created a private glass view too
     glass.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
 
-    [container addSubview:glass positioned:NSWindowBelow relativeTo:nil];
-    objc_setAssociatedObject(container, kGlassEffectKey, glass, OBJC_ASSOCIATION_RETAIN);
-
-    // Listen for appearance changes once per container
-    static const SEL sel = @selector(appearanceChanged:);
-    if (![container respondsToSelector:sel]) {
-      [[NSNotificationCenter defaultCenter] addObserverForName:NSViewFrameDidChangeNotification
-                                                        object:container.window
-                                                         queue:nil
-                                                    usingBlock:^(__unused NSNotification * _Nonnull note) {
-        NSVisualEffectView *v = objc_getAssociatedObject(container, kGlassEffectKey);
-        if (v) {
-          v.state = NSVisualEffectStateActive; // refresh rendering
-        }
-      }];
+    // Add the glass view (positioned relative to background view if opaque, or below everything if not)
+    if (opaque && backgroundView) {
+      [container addSubview:glass positioned:NSWindowAbove relativeTo:backgroundView];
+    } else {
+      [container addSubview:glass positioned:NSWindowBelow relativeTo:nil];
     }
+    
+    // Associate views with the container for cleanup
+    objc_setAssociatedObject(container, kGlassEffectKey, glass, OBJC_ASSOCIATION_RETAIN);
+    if (backgroundView) {
+      objc_setAssociatedObject(container, kBackgroundViewKey, backgroundView, OBJC_ASSOCIATION_RETAIN);
+    } else {
+      objc_setAssociatedObject(container, kBackgroundViewKey, nil, OBJC_ASSOCIATION_ASSIGN);
+    }
+
+ 
 
     int id = g_nextViewId++;
     g_glassViews[id] = glass;

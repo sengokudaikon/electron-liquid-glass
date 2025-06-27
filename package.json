@@ -43,8 +43,9 @@
     "build:all": "bun run build:native && bun run build",
     "clean": "rimraf build prebuilds dist",
     "prepack": "bun run build:all",
-    "dev": "bun run build:native && bun start",
-    "start": "bunx -y electronmon ./examples/electron.cjs",
+    "dev": "bun run build:all && run-p watch-examples start",
+    "watch-examples": "tsc -w --project tsconfig.examples.json",
+    "start": "bun x electronmon ./dist-examples/electron.js",
     "version:patch": "npm version patch",
     "version:minor": "npm version minor",
     "version:major": "npm version major",
@@ -74,6 +75,7 @@
     "node-gyp-build": "^4"
   },
   "devDependencies": {
+    "@3c1u/bun-run-all": "^0.1.2",
     "@types/node": "^20",
     "electron": "^36",
     "node-gyp": "^11.2.0",

@@ -1,5 +1,6 @@
 // Renderer side for examples – tweak liquid glass
 const { ipcRenderer } = require("electron");
+const { GlassMaterialVariant } = require("../dist/index");
 
 let viewId = null;
 
@@ -16,9 +17,10 @@ function buildButtons(containerId, type, values) {
   const container = document.getElementById(containerId);
   values.forEach((v) => {
     const btn = document.createElement("button");
-    btn.textContent = String(v);
+    btn.textContent = typeof v === "object" && v.name !== undefined ? v.name : String(v);
     btn.addEventListener("click", () => {
-      send(type, v);
+      const value = typeof v === "object" && v.value !== undefined ? v.value : v;
+      send(type, value);
       [...container.children].forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
     });
@@ -27,6 +29,12 @@ function buildButtons(containerId, type, values) {
 }
 
 // Only expose production-safe settings
-buildButtons("variant-buttons", "variant", Array.from({ length: 16 }, (_, i) => i).concat([19]));
+buildButtons(
+  "variant-buttons",
+  "variant",
+  Object.entries(GlassMaterialVariant).map(([name, value]) => {
+    return { name, value };
+  })
+);
 buildButtons("scrim-buttons", "scrim", [0, 1]);
 buildButtons("subdued-buttons", "subdued", [0, 1]);
